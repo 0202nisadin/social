@@ -1,0 +1,31 @@
+<html>
+<%include partials/header%>
+
+    <body>
+        <%include partials/logout%>
+            <div id="user_profile_visit_div">
+                <div class="profile_info" id="profile_picture_div">
+                    <h2>Name:
+                        <%=user.name%>
+                    </h2>
+                    <h4>Location:
+                        <%=user.user_profile[0].location%>
+                    </h4>
+                    <img src="http://localhost:3000/user_profile_images/<%=user.user_profile[0].profile_pic%>">
+                </div>
+                <div class="profile_info" id="about_me">
+                    <h3>About me</h3>
+                    <p>
+                        <%=user.user_profile[0].description%>
+                    </p>
+                </div>
+                <div class="profile_info" id="interests">
+                    <h3>Interests</h3>
+                    <p>
+                        <%=user.user_profile[0].interests%>
+                    </p>
+                </div>
+            </div>
+    </body>
+
+</html>

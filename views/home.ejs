@@ -1,0 +1,68 @@
+<%include partials/header%>
+    <html>
+
+    <body>
+        <%include partials/logout%>
+            <h1>Home
+            </h1>
+            <h2>Welcome
+                <%=name%>
+            </h2>
+            <h2 id="community_header">Node Connect Updates</h2>
+            <div id="community_statuses_div">
+                <ol class="user_statuses">
+                    <%user_statuses.forEach(function(user_status){ %>
+                        <li class="clearfix">
+                            <img src="http://localhost:3000/user_profile_images/<%=user_status.profile_pic%>">
+                            <div class="poster_name">
+                                <%=user_status.name%>
+                            </div>
+                            <p>
+                                <%=user_status.user_status%>
+                            </p>
+                        </li>
+                        <%})%>
+                </ol>
+                <textarea id="statuses_textarea" rows="4" cols="50">
+						</textarea>
+                </br>
+                <button id="submit_status_button" type="submit">POST</button>
+            </div>
+            <button id="user_profile_redirect" type="submit">Go to User Profile</button>
+            <button id="find_friends_redirect" type="submit">Find Friends</button>
+    </body>
+
+    <script>
+        $("#submit_status_button").on("click", function() {
+            var status_val = $("#statuses_textarea").val();
+            var user_status = {
+                user_status: status_val
+            };
+            $("#statuses_textarea").val('');
+
+            $.ajax({
+                url: "/user_status/create",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    "user_status": status_val
+                }),
+                success: function(saved_status) {
+                    $(".user_statuses").append("<li class='clearfix'><img src='http://localhost:3000/user_profile_images/" + saved_status.profile_pic + "'><div class='poster_name'>" + saved_status.name + "</div><p>" + status_val + "</p></li>");
+                },
+                err: function() {
+
+                }
+            });
+        });
+
+        $("#user_profile_redirect").on("click", function() {
+            location.href = "http://localhost:3000/user_profile"
+        });
+
+        $("#find_friends_redirect").on("click", function() {
+            location.href = "http://localhost:3000/friends"
+        });
+    </script>
+
+    </html>

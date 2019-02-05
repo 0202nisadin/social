@@ -1,0 +1,59 @@
+#community_header {
+    text-align: center;
+}
+
+#community_statuses_div {
+    width: 50%;
+    margin: auto;
+    text-align: center
+}
+
+#submit_status_button {
+    margin-top: 20px;
+}
+
+.user_statuses {
+    list-style-type: none;
+}
+
+#find_friends_redirect {
+    float: right;
+}
+
+.user_statuses li {
+    width: 35%;
+    margin-left: 30%;
+    margin-bottom: 20px;
+}
+
+.user_statuses li img {
+    width: 108px;
+    float: left;
+    clear: left;
+}
+
+.poster_name {
+    float: left;
+    margin-left: 20px;
+}
+
+.user_statuses li p {
+    float: left;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    clear: left;
+}
+
+.clearfix:before,
+.clearfix:after {
+    content: "";
+    display: block;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+#statuses_textarea {
+    resize: none;
+}

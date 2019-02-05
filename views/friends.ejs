@@ -1,0 +1,37 @@
+<html>
+<%include partials/header%>
+
+    <body>
+        <%include partials/logout%>
+            <h1>Find Friends</h1>
+            <%user_friends.forEach(function(friend){%>
+                <div class="potential_friend">
+                    <div class="friend_profile_pic">
+                        <img src="http://localhost:3000/user_profile_images/<%=friend.user_profile[0].profile_pic%>">
+                    </div>
+                    <h3>
+                        <%=friend.name%>
+                    </h3>
+                    <button id="<%=friend.member_id%>" class="request_button" type="button">Send Friend Request</button>
+                </div>
+                <%})%>
+    </body>
+
+    <script>
+        $(".request_button").on('click', function() {
+            var clicked_button = $(this);
+            $.ajax({
+                method: "POST",
+                url: "/friend_request",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    "friend_member_id": clicked_button.attr("id")
+                }),
+                success: function() {
+                    clicked_button.closest(".potential_friend").remove();
+                }
+            })
+        });
+    </script>
+
+</html>

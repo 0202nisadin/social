@@ -1,0 +1,24 @@
+<button id="log_out_user" type="button">Log Out</button>
+<button id="return_to_home" type="button">Return to Home</button>
+<script>
+    $("#log_out_user").on("click", function() {
+        $.ajax({
+            url: "/logout",
+            method: "POST",
+            success: function() {
+                location.href = "http://localhost:3000";
+            },
+            errors: function() {
+                if (err) {
+                    reply("Error during log out").code(400)
+                } else {
+                    reply("Successfully logged out")
+                }
+            }
+        })
+    });
+
+    $("#return_to_home").on("click", function() {
+        location.href = "http://localhost:3000/home";
+    });
+</script>

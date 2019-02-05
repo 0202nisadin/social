@@ -1,0 +1,225 @@
+<html>
+<%include partials/header%>
+
+    <body>
+        <%include partials/logout%>
+            <button id="edit_profile_button" type="button">Edit</button>
+            <h1 id="profile_header">Profile</h1>
+            <div id="user_friends_list_section">
+                <h2>Friends</h2>
+                <ul>
+                    <%user_friends.forEach(function(friend){%>
+                        <li>
+                            <div id="<%=friend.member_id%>" class="user_friend_list">
+                                <img src="http://localhost:3000/user_profile_images/<%=friend.profile_pic%>">
+                                <span><%=friend.friend_name%></span>
+                                <button id="visiting_profile" type="button" onclick="window.location.href='http://localhost:3000/user_profile/<%=friend.member_id%>'">Go to Profile</button>
+                                <button id="<%=friend.member_id%>" class="chat_button" type="button">Chat</button>
+                            </div>
+                        </li>
+                        <%})%>
+                </ul>
+            </div>
+            <div id="user_profile_div">
+                <div class="profile_info" id="profile_picture_div">
+                    <h2>Name:
+                        <%=user.name%>
+                    </h2>
+                    <h4>Location:
+                        <%=user.user_profile[0].location%>
+                    </h4>
+                    <img src="http://localhost:3000/user_profile_images/<%=user.user_profile[0].profile_pic%>">
+                </div>
+                <div class="profile_info" id="about_me">
+                    <h3>About me</h3>
+                    <p>
+                        <%=user.user_profile[0].description%>
+                    </p>
+                </div>
+                <div class="profile_info" id="interests">
+                    <h3>Interests</h3>
+                    <p>
+                        <%=user.user_profile[0].interests%>
+                    </p>
+                </div>
+            </div>
+            <div style="display: none;" id="edit_profile_form_container">
+                <form id="edit_profile_form">
+                    <ul>
+                        <li>
+                            <label for="name">Name</label>
+                            <input type="text" name="name" value="<%=user.name%>">
+                        </li>
+                        <li>
+                            <label for="location">Location</label>
+                            <input type="text" name="location" value="<%=user.user_profile[0].location%>">
+                        </li>
+                        <li>
+                            <label for="description">Description</label>
+                            <textarea rows="4" name="description" cols="30"><%=user.user_profile[0].description%></textarea>
+                        </li>
+                        <li>
+                            <label for="interests">Interests</label>
+                            <textarea rows="4" name="interests" cols="30"><%=user.user_profile[0].interests%></textarea>
+                        </li>
+                        <li>
+                            <label for="profile_pic">Profile Pic</label>
+                            <input id="upload_profile_pic" type="file" onchange="uploadProfileImage()">
+                        </li>
+                    </ul>
+                    <button id="save_profile_button" type="button">Save</button>
+                    <button id="cancel_edit_profile" type="button">Cancel</button>
+                </form>
+            </div>
+            <div class="friend_requests_section">
+                <h2>Pending Requests</h2>
+                <ul>
+                    <%user.friend_requests.forEach(function(request){%>
+                        <li>
+                            <div id="<%=request.member_id%>" class="friend_request">
+                                <div class="friend_request_pic">
+                                    <img src="http://localhost:3000/user_profile_images/<%=request.profile_pic%>">
+                                </div>
+                                <span><%=request.friend_name%></span><br>
+                                <button id="accept_friend_request" type="submit">Accept</button>
+                            </div>
+                        </li>
+                        <%})%>
+                </ul>
+            </div>
+            <div id="chat_section_wrapper"></div>
+    </body>
+    <script>
+        var socket = io();
+
+        $(".chat_button").on('click', function() {
+            var specific_member_id = $(this).parent().attr('id')
+                /*chat_box = '<div class="chat_section"' + '>'
+                chat_box += '<div id="chat_title_section"><span>Node Connect Chat</span><div class="chat_close"><img src="http://localhost:3000/images/node_connect_close.png"></div></div>'
+                chat_box += '<div id=' + specific_member_id + ' ' + 'class="all_chat_messages">' + '</div>'
+                chat_box += '<div id="send_message">'
+                chat_box += '<input id="send_message_input" type="text" placeholder="Send Message">'
+                chat_box += '</div>'
+                chat_box += '</div>'*/
+            chat_box = `<div class="chat_section">
+                            <div id="chat_title_section">
+                                <span>Node Connect Chat</span>
+                                <div class="chat_close">
+                                    <img src="http://localhost:3000/images/node_connect_close.png">
+                                </div>
+                            </div>
+                            <div class="all_chat_messages">
+                            </div>
+                            <div id="send_message">
+                                <input id="send_message_input" type="text" placeholder="Send Message">
+                            </div>
+                        </div>`
+            $("#chat_section_wrapper").append(chat_box);
+        });
+
+        $(document).on("click", ".chat_close", function() {
+            //$(this).closest('.chat_section').remove();
+            $('.chat_section').remove();
+        });
+
+        //socket.emit("message_from_client", "hello");
+
+        socket.emit("attach_user_info", {
+            "member_id": "<%=user.member_id%>",
+            "user_name": "<%=user.name%>"
+        }); /*Attach signed user information to the socket object. This will help in sending messages between the right users*/
+
+        function sendUserMessage(usr_msg) {
+            socket.emit('send_chat_message', usr_msg)
+        }
+
+        /*socket.on("receive_chat_message", function(received_msg) {
+            console.log("received_msg", received_msg);
+        }); */
+
+        socket.on("message_from_server", function(received_msg) {
+            $(".all_chat_messages").append("<div class='usr_msg'>" + "<span class='user_with_message'>" + received_msg.user_name + "</span>" + "<div class='usr_msg_box'><p>" + received_msg.msg + "</p></div></div>")
+        });
+
+        $(document).on("keypress", "#send_message input", function(e) {
+            if (e.keyCode === 13) {
+                var chat_message_content = $(this).val();
+                $(".all_chat_messages").append("<div class='usr_msg'>" + "<span class='user_with_message'>You:</span>" + "<div class='usr_msg_box'><p>" + chat_message_content + "</p></div></div>")
+                    /*socket.emit("send_chat_message", {
+                        "msg": chat_message_content,
+                        "friend_member_id": $(specific_friend_chatbox).attr("id")
+                    });*/
+                socket.emit("message_from_client", {
+                    "msg": chat_message_content,
+                    "friend_member_id": $(".chat_button").attr("id")
+                })
+                $(this).val("");
+            }
+        });
+
+        $("#save_profile_button").on("click", function() {
+            // var updated_profile_data = $("#edit_profile_form").serialize();
+            $.ajax({
+                method: "POST",
+                url: "/user_profile/edit",
+                data: $("#edit_profile_form").serialize(),
+                success: function() {
+                    $("#edit_profile_form_container").hide();
+                }
+            })
+
+        });
+
+        $("#edit_profile_button").on("click", function() {
+            $("#edit_profile_form_container").show();
+        });
+
+        $("#cancel_edit_profile").on("click", function() {
+            $("#edit_profile_form_container").hide();
+        });
+
+        /*$(document).on("click", "#cancel_edit_profile", function() {
+            $("#edit_profile_form_container").hide();
+        });*/
+
+        $("#accept_friend_request").on("click", function() {
+            var friend_member_id = $(this).parent().attr("id")
+            $.ajax({
+                method: "POST",
+                url: "/accept_friend_request",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    "member_id": friend_member_id
+                }),
+                success: function() {}
+            })
+        });
+
+        $("#upload_profile_pic").on("click", function() {
+            uploadProfileImage();
+        });
+
+        function uploadProfileImage() {
+            var image_to_upload = $("#upload_profile_pic")[0].files[0]
+            var reader = new FileReader()
+            reader.readAsDataURL(image_to_upload)
+            reader.onload = function() {
+                var image_data = {
+                    "image_data": reader.result.split(',')[1],
+                    "image_type": image_to_upload.type.split('/')[1]
+                }
+                $.ajax({
+                    method: "POST",
+                    url: "/profile_pic/upload",
+                    contentType: "application/json",
+                    data: JSON.stringify(image_data),
+                    success: function(updated_profile_pic) {
+                        $(".profile_info img").remove()
+                        $("#profile_picture_div").append("<img src=http://localhost:3000/user_profile_images/" + updated_profile_pic + ">")
+                    }
+                });
+            }
+        }
+    </script>
+
+</html>
